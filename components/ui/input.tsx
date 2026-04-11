@@ -1,9 +1,19 @@
 import * as React from 'react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
+import { InputHTMLAttributes } from 'react';
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
+
+function Input({ className, type, label , error, ...props }: FormInputProps) {
   return (
+    <label htmlFor={props.name}>
+      {label}
     <input
       type={type}
       data-slot="input"
@@ -14,7 +24,9 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         className,
       )}
       {...props}
-    />
+      />
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      </label>
   )
 }
 

@@ -2,9 +2,9 @@
 
 import { useRef, useEffect } from 'react'
 import { Provider } from 'react-redux'
-import { makeStore, AppStore } from '@/lib/store'
-import { initializeCart } from '@/lib/features/cartSlice'
-import { initializeUser } from '@/lib/features/userSlice'
+import { makeStore, AppStore } from '../../lib/store'
+import { initializeCart } from '../../lib/features/cartSlice'
+import { initializeUser } from '../../lib/features/userSlice'
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const storeRef = useRef<AppStore | null>(null)

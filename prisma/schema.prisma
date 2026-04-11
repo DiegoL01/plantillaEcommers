@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Category model for storing product categories
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+// Rating embedded in Product
+type Rating {
+  rate  Float
+  count Int
+}
+
+// Product model
+model Product {
+  id          Int       @id @default(autoincrement())
+  title       String
+  price       Decimal   @db.Decimal(10, 2)
+  description String    @db.Text
+  image       String
+  rating      Rating
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  orderItems  OrderItem[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+// User model
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  firstName String
+  lastName  String?
+  avatar    String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// Order model
+model Order {
+  id            Int       @id @default(autoincrement())
+  orderNumber   String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  items         OrderItem[]
+  total         Decimal   @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING)
+  
+  // Shipping and billing info
+  firstName     String
+  lastName      String
+  email         String
+  address       String
+  city          String
+  postalCode    String
+  country       String
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("orders")
+}
+
+// OrderItem model
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// Enums
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}

@@ -26,7 +26,7 @@ const initialState: ProductState = {
   },
 }
 
-const API_BASE_URL = 'https://fakestoreapi.com'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
@@ -60,7 +60,7 @@ export const fetchCategories = createAsyncThunk(
   'products/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products/categories`)
+      const response = await fetch(`${API_BASE_URL}/categories`)
       if (!response.ok) throw new Error('Failed to fetch categories')
       const categories = await response.json()
       return categories as string[]

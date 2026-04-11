@@ -1,15 +1,12 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+import { StoreProvider } from '../components/providers/StoreProvider'
+import { ThemeProvider } from '../components/providers/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Luxe - E-commerce Premium',
+  description: 'Discover premium products with Luxe ecommerce',
+  generator: 'next.js',
   icons: {
     icon: [
       {
@@ -35,10 +32,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="es" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <ThemeProvider>
+          <StoreProvider>
+            {children}
+          </StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
