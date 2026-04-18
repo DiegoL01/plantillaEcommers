@@ -96,9 +96,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         {/* Rating */}
         <div className="flex items-center gap-1">
           <Star className="w-4 h-4 fill-warning text-warning" />
-          <span className="text-sm font-medium">{product.rating.rate}</span>
+          <span className="text-sm font-medium">{product.RatingRate}</span>
           <span className="text-xs text-muted-foreground">
-            ({product.rating.count} reseñas)
+            ({product.RatingCount} reseñas)
           </span>
         </div>
 

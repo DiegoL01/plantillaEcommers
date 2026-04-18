@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import type { Product, ProductFilters } from '../types'
+import type { Product, ProductFilters } from '../../types'
 
 interface ProductState {
   items: Product[]
@@ -99,7 +99,7 @@ const applyFilters = (items: Product[], filters: ProductFilters): Product[] => {
       result.sort((a, b) => b.price - a.price)
       break
     case 'rating':
-      result.sort((a, b) => b.rating.rate - a.rating.rate)
+      result.sort((a, b) => b.RatingRate - a.RatingRate)
       break
     default:
       break

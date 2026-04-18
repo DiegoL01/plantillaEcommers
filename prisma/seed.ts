@@ -39,7 +39,8 @@ async function main() {
         'Premium wireless headphones with active noise cancellation, 30-hour battery life, and premium sound quality.',
       image:
         'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
-      rating: { rate: 4.8, count: 256 },
+      ratingRate: 4.8,
+      ratingCount: 256,
       categoryId: electronics.id,
     },
     {
@@ -49,7 +50,8 @@ async function main() {
         'Feature-rich smartwatch with ECG monitoring, blood oxygen tracking, and 7-day battery life.',
       image:
         'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
-      rating: { rate: 4.6, count: 189 },
+      ratingRate: 4.6,
+      ratingCount: 189,
       categoryId: electronics.id,
     },
     {
@@ -59,7 +61,8 @@ async function main() {
         'Professional 4K camera with HDR support, optical image stabilization, and advanced autofocus system.',
       image:
         'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=500&fit=crop',
-      rating: { rate: 4.7, count: 142 },
+      ratingRate: 4.7,
+      ratingCount: 142,
       categoryId: electronics.id,
     },
     {
@@ -69,7 +72,8 @@ async function main() {
         'High-quality leather jacket with classic design, perfect for any occasion and weather.',
       image:
         'https://images.unsplash.com/photo-1551028719-00167b16ebc5?w=500&h=500&fit=crop',
-      rating: { rate: 4.9, count: 312 },
+      ratingRate: 4.9,
+      ratingCount: 312,
       categoryId: clothing.id,
     },
     {
@@ -79,7 +83,8 @@ async function main() {
         'Elegant evening dress made from premium fabric, perfect for special occasions.',
       image:
         'https://images.unsplash.com/photo-1595777712802-51d24609991f?w=500&h=500&fit=crop',
-      rating: { rate: 4.5, count: 203 },
+      ratingRate: 4.5,
+      ratingCount: 203,
       categoryId: clothing.id,
     },
     {
@@ -89,7 +94,8 @@ async function main() {
         'Stylish designer sunglasses with UV protection and premium lens quality.',
       image:
         'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&h=500&fit=crop',
-      rating: { rate: 4.4, count: 156 },
+      ratingRate: 4.4,
+      ratingCount: 156,
       categoryId: clothing.id,
     },
     {
@@ -99,7 +105,8 @@ async function main() {
         'Exquisite 18K gold necklace with premium craftsmanship and elegant design.',
       image:
         'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=500&fit=crop',
-      rating: { rate: 4.9, count: 428 },
+      ratingRate: 4.9,
+      ratingCount: 428,
       categoryId: jewelery.id,
     },
     {
@@ -109,7 +116,8 @@ async function main() {
         'Beautiful diamond ring with premium certification and elegant white gold band.',
       image:
         'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&h=500&fit=crop',
-      rating: { rate: 5.0, count: 189 },
+      ratingRate: 5.0,
+      ratingCount: 189,
       categoryId: jewelery.id,
     },
     {
@@ -119,7 +127,8 @@ async function main() {
         'Elegant pearl earrings with 14K gold backing, perfect for both casual and formal wear.',
       image:
         'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&h=500&fit=crop',
-      rating: { rate: 4.7, count: 267 },
+      ratingRate: 4.7,
+      ratingCount: 267,
       categoryId: jewelery.id,
     },
     {
@@ -129,7 +138,8 @@ async function main() {
         'Essential guide to JavaScript programming by Douglas Crockford.',
       image:
         'https://images.unsplash.com/photo-1507842217343-583f20270319?w=500&h=500&fit=crop',
-      rating: { rate: 4.6, count: 512 },
+      ratingRate: 4.6,
+      ratingCount: 512,
       categoryId: books.id,
     },
     {
@@ -139,7 +149,8 @@ async function main() {
         'Comprehensive guide to React framework covering all modern practices.',
       image:
         'https://images.unsplash.com/photo-1507842217343-583f20270319?w=500&h=500&fit=crop',
-      rating: { rate: 4.8, count: 634 },
+      ratingRate: 4.8,
+      ratingCount: 634,
       categoryId: books.id,
     },
     {
@@ -149,7 +160,8 @@ async function main() {
         'Complete guide to modern web design principles and best practices.',
       image:
         'https://images.unsplash.com/photo-1507842217343-583f20270319?w=500&h=500&fit=crop',
-      rating: { rate: 4.5, count: 389 },
+      ratingRate: 4.5,
+      ratingCount: 389,
       categoryId: books.id,
     },
   ]

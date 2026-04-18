@@ -7,39 +7,35 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // Category model for storing product categories
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  products Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("categories")
 }
 
-// Rating embedded in Product
-type Rating {
-  rate  Float
-  count Int
-}
-
 // Product model
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   title       String
-  price       Decimal   @db.Decimal(10, 2)
-  description String    @db.Text
+  price       Decimal     @db.Decimal(10, 2)
+  description String      @db.Text
   image       String
-  rating      Rating
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId  Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
+  // Rating como campos in linea para mantenerlo 
+  //  sencillo o por lo menos lo mas posible
+  ratingRate  Float       @map("rating_rate")
+  ratingCount Int         @map("rating_count")
 
   @@index([categoryId])
   @@map("products")
@@ -47,8 +43,8 @@ model Product {
 
 // User model
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   password  String
   firstName String
   lastName  String?
@@ -62,25 +58,25 @@ model User {
 
 // Order model
 model Order {
-  id            Int       @id @default(autoincrement())
-  orderNumber   String    @unique
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        Int
-  items         OrderItem[]
-  total         Decimal   @db.Decimal(10, 2)
-  status        OrderStatus @default(PENDING)
-  
+  id          Int         @id @default(autoincrement())
+  orderNumber String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  items       OrderItem[]
+  total       Decimal     @db.Decimal(10, 2)
+  status      OrderStatus @default(PENDING)
+
   // Shipping and billing info
-  firstName     String
-  lastName      String
-  email         String
-  address       String
-  city          String
-  postalCode    String
-  country       String
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  firstName  String
+  lastName   String
+  email      String
+  address    String
+  city       String
+  postalCode String
+  country    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("orders")
@@ -95,7 +91,7 @@ model OrderItem {
   productId Int
   quantity  Int
   price     Decimal @db.Decimal(10, 2)
-  
+
   @@index([orderId])
   @@index([productId])
   @@map("order_items")

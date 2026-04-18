@@ -10,7 +10,7 @@ export async function GET() {
     })
 
     // Return just the category names as strings
-    const categoryNames = categories.map((cat) => cat.name)
+    const categoryNames = categories.map((category) => category.name)
 
     return NextResponse.json(categoryNames)
   } catch (error) {
