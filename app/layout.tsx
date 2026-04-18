@@ -2,11 +2,13 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { StoreProvider } from '../components/providers/StoreProvider'
 import { ThemeProvider } from '../components/providers/ThemeProvider'
+import { LayoutClient } from '@/components/layout/LayoutClient'
 
 export const metadata: Metadata = {
-  title: 'Luxe - E-commerce Premium',
-  description: 'Discover premium products with Luxe ecommerce',
+  title: 'Luxe - Compras Premium Online',
+  description: 'Descubre productos premium seleccionados con cuidado. Compra en Luxe con garantía, envío rápido y atención al cliente 24/7.',
   generator: 'next.js',
+  keywords: ['ecommerce', 'compras online', 'productos premium', 'tienda online'],
   icons: {
     icon: [
       {
@@ -36,7 +38,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <StoreProvider>
-            {children}
+            <LayoutClient>{children}</LayoutClient>
           </StoreProvider>
         </ThemeProvider>
       </body>

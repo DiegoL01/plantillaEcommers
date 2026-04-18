@@ -7,7 +7,7 @@ import { useAppSelector, useAppDispatch } from '../../lib/hooks'
 import { fetchProducts } from '../../lib/features/productSlice'
 import { useToast } from '../../hooks/useToast'
 import { ProductCard } from '../../components/product/ProductCard'
-import { ProductFilters } from '../../components/product/ProductFilters'
+import { ProductFiltersWrapper } from '@/components/product/ProductFiltersWrapper' 
 import { ProductCardSkeleton } from '../../components/ui/custom-skeleton'
 import { EmptyState } from '../../components/ui/empty-state'
 import { Button } from '../../components/ui/button'
@@ -122,7 +122,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row gap-6">
             <aside className="w-full md:w-48 shrink-0">
-              <ProductFilters />
+              <ProductFiltersWrapper />
             </aside>
 
             <main className="flex-1">
@@ -153,6 +153,34 @@ export default function Home() {
                 />
               )}
             </main>
+          </div>
+        </div>
+      </section>
+               {/* CTA Section */}
+      <section className="bg-primary text-primary-foreground">
+        <div className="container mx-auto px-4 py-16">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold">
+              Únete a nuestra comunidad
+            </h2>
+            <p className="text-primary-foreground/80">
+              Suscríbete para recibir ofertas exclusivas, nuevos lanzamientos y contenido especial.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Tu correo electrónico"
+                className="flex-1 h-12 px-4 rounded-lg bg-primary-foreground text-primary placeholder:text-primary/60 focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                size="lg"
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                Suscribirse
+              </Button>
+            </form>
           </div>
         </div>
       </section>
