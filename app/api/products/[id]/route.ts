@@ -29,8 +29,11 @@ export async function GET(
       price: parseFloat(product.price.toString()),
       description: product.description,
       category: product.category.name,
-      image: product.image,
-      rating: product.rating,
+      image: product.image || `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop`,
+      rating: {
+        rate: parseFloat(product.ratingRate.toString()) || 4.5,
+        count: product.ratingCount || 0,
+      },
     }
 
     return NextResponse.json(formattedProduct)

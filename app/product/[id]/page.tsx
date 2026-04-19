@@ -152,13 +152,12 @@ export default function ProductDetail() {
                     <Star
                       key={i}
                       className={`w-4 h-4 ${
-                        //asegurar que obejeto va aqui de la propiedad rating count o rate
-                        i < Math.round(currentProduct.rating.count) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
+                        i < Math.round(currentProduct.rating?.rate || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">(125 reseñas)</span>
+                <span className="text-sm text-muted-foreground">({currentProduct.rating?.count || 0} reseñas)</span>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">{currentProduct.description}</p>
@@ -236,7 +235,7 @@ export default function ProductDetail() {
         {relatedProducts.length > 0 && (
           <section className="mt-16 pt-12 border-t border-border">
             <h2 className="font-serif text-2xl font-bold mb-8">Productos Relacionados</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {relatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

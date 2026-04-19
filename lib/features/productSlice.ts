@@ -99,7 +99,7 @@ const applyFilters = (items: Product[], filters: ProductFilters): Product[] => {
       result.sort((a, b) => b.price - a.price)
       break
     case 'rating':
-      result.sort((a, b) => b.RatingRate - a.RatingRate)
+      result.sort((a, b) => b.RatingRate || 0 - a.RatingRate || 0)
       break
     default:
       break
