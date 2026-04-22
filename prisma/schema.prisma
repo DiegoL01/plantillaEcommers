@@ -34,8 +34,9 @@ model Product {
   orderItems  OrderItem[]
   // Rating como campos in linea para mantenerlo 
   //  sencillo o por lo menos lo mas posible
-  ratingRate  Float       @map("rating_rate")
-  ratingCount Int         @map("rating_count")
+  ratingRate  Float       @default(0) @map("rating_rate")
+  ratingCount Int         @default(0) @map("rating_count")
+  stock       Int         @default(0)
 
   @@index([categoryId])
   @@map("products")
@@ -49,11 +50,18 @@ model User {
   firstName String
   lastName  String?
   avatar    String?
+  role      UserRole @default(CUSTOMER)
   orders    Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+// User role enum
+enum UserRole {
+  ADMIN
+  CUSTOMER
 }
 
 // Order model

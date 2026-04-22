@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma'
+import * as bcrypt from 'bcryptjs'
 
 async function main() {
   console.log('🌱 Starting database seed...')
@@ -10,6 +11,21 @@ async function main() {
   await prisma.product.deleteMany({})
   await prisma.category.deleteMany({})
   await prisma.user.deleteMany({})
+
+  // Crear usuario admin
+  console.log('👨‍💼 Creating admin user...')
+  const hashedPassword = await bcrypt.hash('admin12345', 10)
+  await prisma.user.create({
+    data: {
+      email: 'admin@luxe.com',
+      password: hashedPassword,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: 'ADMIN',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin@luxe.com',
+    },
+  })
+  console.log('✅ Admin user created: admin@luxe.com (password: admin12345)')
 
   // Crear categorías
   console.log('📁 Creating categories...')
@@ -168,26 +184,37 @@ async function main() {
 
   for (const product of products) {
     await prisma.product.create({
-      data: product,
+      data: {
+        ...product,
+        stock: Math.floor(Math.random() * 100) + 10, // Random stock between 10-110
+      },
     })
   }
 
   // Crear usuario de prueba
   console.log('👤 Creating test user...')
+  const testPassword = await bcrypt.hash('test12345', 10)
   await prisma.user.create({
     data: {
       email: 'test@example.com',
-      password: 'hashed_password_demo', // En producción, usar bcryptjs
+      password: testPassword,
       firstName: 'Test',
       lastName: 'User',
+      role: 'CUSTOMER',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test@example.com',
     },
   })
+  console.log('✅ Test user created: test@example.com (password: test12345)')
 
   console.log('✅ Database seeded successfully!')
   console.log('📊 Created:')
   console.log(`   - 4 categories`)
-  console.log(`   - 12 products`)
-  console.log(`   - 1 test user`)
+  console.log(`   - 12 products with stock`)
+  console.log(`   - 1 admin user`)
+  console.log(`   - 1 test customer`)
+  console.log('\n🔐 Credentials:')
+  console.log('   Admin: admin@luxe.com / admin12345')
+  console.log('   Customer: test@example.com / test12345')
 }
 
 main()

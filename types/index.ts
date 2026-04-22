@@ -7,12 +7,14 @@ export interface Product {
   image: string
   RatingRate: number
   RatingCount: number
-
+  stock: number
 }
 
 export interface CartItem extends Product {
   quantity: number
 }
+
+export type UserRole = 'ADMIN' | 'CUSTOMER'
 
 export interface User {
   id: number
@@ -20,6 +22,7 @@ export interface User {
   firstName: string
   lastName: string
   avatar?: string
+  role: UserRole
 }
 
 export interface LoginCredentials {

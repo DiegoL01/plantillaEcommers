@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import type { User, LoginCredentials, RegisterCredentials } from '../types'
+import type { User, LoginCredentials, RegisterCredentials } from '../../types'
 
 interface UserState {
   currentUser: User | null
@@ -22,8 +22,8 @@ const loadUserFromStorage = (): User | null => {
 }
 
 const initialState: UserState = {
-  currentUser: null,
-  isAuthenticated: false,
+  currentUser: loadUserFromStorage(),
+  isAuthenticated: !!loadUserFromStorage(),
   loading: false,
   error: null,
 }
@@ -32,39 +32,37 @@ export const loginUser = createAsyncThunk(
   'user/login',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      if (credentials.email === 'demo@luxe.com' && credentials.password === 'demo123') {
-        const user: User = {
-          id: 1,
-          email: credentials.email,
-          firstName: 'Usuario',
-          lastName: 'Demo',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${credentials.email}`,
-        }
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('luxe-user', JSON.stringify(user))
-        }
-        return user
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        return rejectWithValue(error.error || 'Login failed')
       }
-      
-      if (credentials.email && credentials.password.length >= 6) {
-        const user: User = {
-          id: Date.now(),
-          email: credentials.email,
-          firstName: credentials.email.split('@')[0],
-          lastName: '',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${credentials.email}`,
-        }
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('luxe-user', JSON.stringify(user))
-        }
-        return user
+
+      const data = await response.json()
+      const user: User = {
+        id: data.user.id,
+        email: data.user.email,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        avatar: data.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
+        role: data.user.role,
       }
-      
-      return rejectWithValue('Credenciales inválidas')
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('luxe-user', JSON.stringify(user))
+        localStorage.setItem('auth-token', data.token)
+      }
+
+      return user
     } catch (error) {
-      return rejectWithValue('Error al iniciar sesión')
+      return rejectWithValue('Error connecting to server')
     }
   }
 )
@@ -73,29 +71,37 @@ export const registerUser = createAsyncThunk(
   'user/register',
   async (credentials: RegisterCredentials, { rejectWithValue }) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      if (!credentials.email || !credentials.password || !credentials.firstName) {
-        return rejectWithValue('Todos los campos son requeridos')
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        return rejectWithValue(error.error || 'Registration failed')
       }
-      
-      if (credentials.password.length < 6) {
-        return rejectWithValue('La contraseña debe tener al menos 6 caracteres')
-      }
-      
+
+      const data = await response.json()
       const user: User = {
-        id: Date.now(),
-        email: credentials.email,
-        firstName: credentials.firstName,
-        lastName: credentials.lastName || '',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${credentials.email}`,
+        id: data.user.id,
+        email: data.user.email,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        avatar: data.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
+        role: data.user.role,
       }
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('luxe-user', JSON.stringify(user))
+        localStorage.setItem('auth-token', data.token)
       }
+
       return user
     } catch (error) {
-      return rejectWithValue('Error al registrarse')
+      return rejectWithValue('Error connecting to server')
     }
   }
 )
@@ -115,6 +121,7 @@ const userSlice = createSlice({
       state.error = null
       if (typeof window !== 'undefined') {
         localStorage.removeItem('luxe-user')
+        localStorage.removeItem('auth-token')
       }
     },
     clearError: (state) => {
@@ -139,6 +146,7 @@ const userSlice = createSlice({
         state.loading = false
         state.currentUser = action.payload
         state.isAuthenticated = true
+        state.error = null
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
@@ -152,6 +160,7 @@ const userSlice = createSlice({
         state.loading = false
         state.currentUser = action.payload
         state.isAuthenticated = true
+        state.error = null
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false
