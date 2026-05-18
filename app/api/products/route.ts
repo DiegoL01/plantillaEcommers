@@ -43,7 +43,8 @@ export async function GET() {
       description: product.description,
       category: product.category.name,
       image: product.image,
-      rating: product.rating,
+      RatingRate: product.ratingRate,
+      RatingCount: product.ratingCount,
       stock: product.stock,
     }))
 
@@ -112,6 +113,8 @@ export async function POST(request: Request) {
       description: product.description,
       category: product.category.name,
       image: product.image,
+      RatingRate: product.ratingRate,
+      RatingCount: product.ratingCount,
       stock: product.stock,
     }
 

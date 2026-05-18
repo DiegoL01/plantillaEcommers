@@ -63,7 +63,9 @@ export const fetchCategories = createAsyncThunk(
       const response = await fetch(`${API_BASE_URL}/categories`)
       if (!response.ok) throw new Error('Failed to fetch categories')
       const categories = await response.json()
-      return categories as string[]
+      return (categories as Array<string | { name: string }>).map((category) =>
+        typeof category === 'string' ? category : category.name
+      )
     } catch (error) {
       return rejectWithValue('Error al cargar las categorías')
     }
@@ -99,7 +101,7 @@ const applyFilters = (items: Product[], filters: ProductFilters): Product[] => {
       result.sort((a, b) => b.price - a.price)
       break
     case 'rating':
-      result.sort((a, b) => b.RatingRate || 0 - a.RatingRate || 0)
+      result.sort((a, b) => (b.RatingRate || 0) - (a.RatingRate || 0))
       break
     default:
       break
