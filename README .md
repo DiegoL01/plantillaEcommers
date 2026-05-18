@@ -1,6 +1,6 @@
 
 
-# Luxe Ecommerce
+# NovaCart Ecommerce
 
 Plataforma de comercio electrónico premium desarrollada con tecnologías modernas del ecosistema React y Next.js.  
 Ofrece una experiencia completa de compra, gestión administrativa y autenticación segura, lista para escalar en producción.
@@ -63,28 +63,239 @@ Ofrece una experiencia completa de compra, gestión administrativa y autenticaci
 | Stripe SDK                | (Preparación) Integración de pagos|
 
 ---
+# PlantillaEcommers - Architecture Overview
 
-## Estructura del proyecto
-luxe-ecommerce/
-├── app/ # Router de Next.js (App Router)
-│ ├── api/ # Endpoints internos (REST API)
-│ ├── (auth)/ # Rutas de login y registro
-│ ├── cart/ # Página del carrito
-│ ├── checkout/ # Página de checkout
-│ ├── product/[id]/ # Página de detalle de producto
-│ ├── account/ # Historial y perfil del cliente
-│ └── admin/ # Panel de administración
-├── components/ # Componentes reutilizables de la UI
-│ └── ui/ # Componentes base (botones, inputs, modales)
-├── lib/ # Lógica compartida y configuración
-│ ├── features/ # Slices de Redux (carrito)
-│ ├── prisma.ts # Instancia del cliente Prisma
-│ └── auth.ts # Funciones de autenticación (JWT)
-├── prisma/ # Esquema de Prisma, migraciones y seed
-├── types/ # Definiciones de tipos e interfaces TypeScript
-├── hooks/ # Hooks personalizados
-└── .env.example # Plantilla de variables de entorno
+## Diagrama de Arquitectura de el Sistema
 
+```mermaid
+graph TB
+    subgraph Client["🖥️ Client Layer"]
+        UI["User Interface"]
+        PWA["Progressive Web App"]
+    end
+    
+    subgraph Frontend["🎨 Frontend Layer"]
+        React["React Components"]
+        State["State Management<br/>Redux/Context"]
+        Router["React Router"]
+    end
+    
+    subgraph API["🔌 API Gateway"]
+        Gateway["API Gateway<br/>REST/GraphQL"]
+    end
+    
+    subgraph Backend["⚙️ Backend Services"]
+        Auth["Authentication Service"]
+        Product["Product Service"]
+        Cart["Shopping Cart Service"]
+        Order["Order Service"]
+        Payment["Payment Service"]
+        User["User Service"]
+    end
+    
+    subgraph Database["💾 Data Layer"]
+        DB1["Product DB"]
+        DB2["User/Order DB"]
+        Cache["Redis Cache"]
+    end
+    
+    subgraph External["🌐 External Services"]
+        PaymentGW["Payment Gateway<br/>Stripe/PayPal"]
+        Email["Email Service<br/>SendGrid"]
+        Storage["Cloud Storage<br/>AWS S3"]
+    end
+    
+    UI --> PWA
+    PWA --> React
+    React --> State
+    React --> Router
+    State --> Gateway
+    Router --> Gateway
+    
+    Gateway --> Auth
+    Gateway --> Product
+    Gateway --> Cart
+    Gateway --> Order
+    Gateway --> Payment
+    Gateway --> User
+    
+    Auth --> DB2
+    User --> DB2
+    Product --> DB1
+    Cart --> Cache
+    Order --> DB2
+    Payment --> DB2
+    
+    Payment --> PaymentGW
+    Order --> Email
+    Product --> Storage
+```
+## Diagrama de clases 
+```mermaid
+classDiagram
+    class User {
+        -userId: string
+        -email: string
+        -password: string
+        -firstName: string
+        -lastName: string
+        -phone: string
+        -addresses: Address[]
+        -createdAt: Date
+        -updatedAt: Date
+        +register()
+        +login()
+        +updateProfile()
+        +deleteAccount()
+    }
+    
+    class Address {
+        -addressId: string
+        -userId: string
+        -street: string
+        -city: string
+        -state: string
+        -zipCode: string
+        -country: string
+        -isDefault: boolean
+        +validate()
+        +update()
+    }
+    
+    class Product {
+        -productId: string
+        -name: string
+        -description: string
+        -price: number
+        -discount: number
+        -stock: number
+        -category: Category
+        -images: string[]
+        -ratings: Review[]
+        -createdAt: Date
+        +getPrice()
+        +checkAvailability()
+        +updateStock()
+        +addRating()
+    }
+    
+    class Category {
+        -categoryId: string
+        -name: string
+        -description: string
+        -parentCategory: Category
+        -products: Product[]
+        +getProducts()
+        +addProduct()
+    }
+    
+    class Cart {
+        -cartId: string
+        -userId: string
+        -items: CartItem[]
+        -createdAt: Date
+        -updatedAt: Date
+        +addItem()
+        +removeItem()
+        +updateQuantity()
+        +getTotalPrice()
+        +clear()
+    }
+    
+    class CartItem {
+        -cartItemId: string
+        -cartId: string
+        -product: Product
+        -quantity: number
+        -price: number
+        +calculateSubtotal()
+        +updateQuantity()
+    }
+    
+    class Order {
+        -orderId: string
+        -userId: string
+        -items: OrderItem[]
+        -shippingAddress: Address
+        -billingAddress: Address
+        -status: OrderStatus
+        -totalPrice: number
+        -tax: number
+        -shippingCost: number
+        -paymentMethod: PaymentMethod
+        -createdAt: Date
+        -updatedAt: Date
+        +createOrder()
+        +updateStatus()
+        +calculateTotal()
+        +cancel()
+    }
+    
+    class OrderItem {
+        -orderItemId: string
+        -orderId: string
+        -product: Product
+        -quantity: number
+        -priceAtOrder: number
+        +calculateSubtotal()
+    }
+    
+    class Payment {
+        -paymentId: string
+        -orderId: string
+        -amount: number
+        -currency: string
+        -status: PaymentStatus
+        -paymentMethod: PaymentMethod
+        -transactionId: string
+        -createdAt: Date
+        -updatedAt: Date
+        +processPayment()
+        +verifyPayment()
+        +refund()
+    }
+    
+    class Review {
+        -reviewId: string
+        -productId: string
+        -userId: string
+        -rating: number
+        -title: string
+        -comment: string
+        -helpful: number
+        -createdAt: Date
+        +submit()
+        +edit()
+        +delete()
+    }
+    
+    class Inventory {
+        -inventoryId: string
+        -productId: string
+        -quantity: number
+        -reserved: number
+        -warehouse: string
+        -lastUpdated: Date
+        +checkStock()
+        +reserveStock()
+        +releaseStock()
+        +updateQuantity()
+    }
+    
+    User "1" -- "*" Address
+    User "1" -- "1" Cart
+    User "1" -- "*" Order
+    User "1" -- "*" Review
+    Cart "1" -- "*" CartItem
+    CartItem "*" -- "1" Product
+    Product "1" -- "*" Review
+    Product "*" -- "1" Category
+    Order "1" -- "*" OrderItem
+    OrderItem "*" -- "1" Product
+    Order "1" -- "1" Payment
+    Order "1" -- "1" Address
+    Product "1" -- "1" Inventory
+```
 *********
 
 ---
@@ -170,7 +381,7 @@ Todas las rutas están bajo `/api`. Las que requieren autenticación incluyen el
 1. **Clonar el repositorio**
    ```bash 
    git clone https://github.com/DiegoL01/plantillaEcommers.git  
-   cd luxe-ecommerce 
+   cd novacart-ecommerce 
    ```
 2.  Instalar dependencias
    ```bash

@@ -10,7 +10,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
-              <span className="font-serif text-2xl font-bold tracking-tight">LUXE</span>
+              <span className="font-serif text-2xl font-bold tracking-tight">NovaCart</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Tu destino para productos de alta calidad. Descubre lo mejor en moda, electrónica y joyería.
@@ -113,7 +113,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 shrink-0" />
-                <span>info@luxestore.com</span>
+                <span>hola@novacart.com</span>
               </li>
             </ul>
           </div>
@@ -123,7 +123,7 @@ export const Footer = () => {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} LUXE Store. Todos los derechos reservados.
+              © {new Date().getFullYear()} NovaCart. Todos los derechos reservados.
             </p>
             <div className="flex items-center gap-4">
               <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-8" />

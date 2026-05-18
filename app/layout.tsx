@@ -5,26 +5,17 @@ import { ThemeProvider } from '../components/providers/ThemeProvider'
 import { LayoutClient } from '@/components/layout/LayoutClient'
 
 export const metadata: Metadata = {
-  title: 'Luxe - Compras Premium Online',
-  description: 'Descubre productos premium seleccionados con cuidado. Compra en Luxe con garantía, envío rápido y atención al cliente 24/7.',
+  title: 'NovaCart - Ecommerce Online',
+  description: 'Compra productos seleccionados en NovaCart con catálogo actualizado, carrito, pedidos y panel de administración.',
   generator: 'next.js',
   keywords: ['ecommerce', 'compras online', 'productos premium', 'tienda online'],
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
   },
 }
 

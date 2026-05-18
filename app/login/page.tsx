@@ -107,7 +107,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <h1 className="font-serif text-3xl font-bold mb-2">Luxe</h1>
+          <h1 className="font-serif text-3xl font-bold mb-2">NovaCart</h1>
           <p className="text-muted-foreground">
             {mode === 'login' ? 'Inicia sesión en tu cuenta' : 'Crea una nueva cuenta'}
           </p>
