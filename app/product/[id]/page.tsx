@@ -152,12 +152,12 @@ export default function ProductDetail() {
                     <Star
                       key={i}
                       className={`w-4 h-4 ${
-                        i < Math.round(currentProduct.rating?.rate || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
+                        i < Math.round(currentProduct.RatingRate || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">({currentProduct.rating?.count || 0} reseñas)</span>
+                <span className="text-sm text-muted-foreground">({currentProduct.RatingCount || 0} reseñas)</span>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">{currentProduct.description}</p>

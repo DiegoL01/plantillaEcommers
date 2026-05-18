@@ -26,10 +26,18 @@ function verifyAdminRole(token: string | null): boolean {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id: rawId } = await params
+    const id = parseInt(rawId)
+
+    if (Number.isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product id' },
+        { status: 400 }
+      )
+    }
 
     const product = await prisma.product.findUnique({
       where: { id },
@@ -51,12 +59,11 @@ export async function GET(
       title: product.title,
       price: parseFloat(product.price.toString()),
       description: product.description,
+      categoryId: product.categoryId,
       category: product.category.name,
       image: product.image || `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop`,
-      rating: {
-        rate: parseFloat(product.ratingRate.toString()) || 4.5,
-        count: product.ratingCount || 0,
-      },
+      RatingRate: product.ratingRate,
+      RatingCount: product.ratingCount,
       stock: product.stock,
     }
 
@@ -72,7 +79,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = getAuthToken(request)
@@ -83,7 +90,16 @@ export async function PUT(
       )
     }
 
-    const id = parseInt(params.id)
+    const { id: rawId } = await params
+    const id = parseInt(rawId)
+
+    if (Number.isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product id' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
     const { title, price, description, image, categoryId, stock } = body
 
@@ -132,8 +148,11 @@ export async function PUT(
       title: updatedProduct.title,
       price: parseFloat(updatedProduct.price.toString()),
       description: updatedProduct.description,
+      categoryId: updatedProduct.categoryId,
       category: updatedProduct.category.name,
       image: updatedProduct.image,
+      RatingRate: updatedProduct.ratingRate,
+      RatingCount: updatedProduct.ratingCount,
       stock: updatedProduct.stock,
     }
 
@@ -149,7 +168,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = getAuthToken(request)
@@ -160,7 +179,15 @@ export async function DELETE(
       )
     }
 
-    const id = parseInt(params.id)
+    const { id: rawId } = await params
+    const id = parseInt(rawId)
+
+    if (Number.isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product id' },
+        { status: 400 }
+      )
+    }
 
     // Verify product exists
     const product = await prisma.product.findUnique({

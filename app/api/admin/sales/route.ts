@@ -34,13 +34,22 @@ export async function GET(request: Request) {
       )
     }
 
-    // Get total sales
-    const totalOrders = await prisma.order.count()
-    const totalRevenue = await prisma.order.aggregate({
-      _sum: {
-        total: true,
-      },
-    })
+    const [totalOrders, totalUsers, lowStockCount, totalRevenue] = await Promise.all([
+      prisma.order.count(),
+      prisma.user.count(),
+      prisma.product.count({
+        where: {
+          stock: {
+            lte: 10,
+          },
+        },
+      }),
+      prisma.order.aggregate({
+        _sum: {
+          total: true,
+        },
+      }),
+    ])
 
     // Get orders by status
     const ordersByStatus = await prisma.order.groupBy({
@@ -74,10 +83,27 @@ export async function GET(request: Request) {
           productId: item.productId,
           productTitle: product?.title || 'Unknown',
           quantity: item._sum.quantity || 0,
-          revenue: parseFloat((item._sum.price || 0).toString()),
+          revenue:
+            parseFloat((item._sum.price || 0).toString()) *
+            (item._sum.quantity || 0),
         }
       })
     )
+
+    const lowStockProducts = await prisma.product.findMany({
+      where: {
+        stock: {
+          lte: 10,
+        },
+      },
+      include: {
+        category: true,
+      },
+      orderBy: {
+        stock: 'asc',
+      },
+      take: 10,
+    })
 
     // Get daily revenue for the last 30 days
     const thirtyDaysAgo = new Date()
@@ -110,9 +136,17 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       totalOrders,
+      totalUsers,
+      lowStockCount,
       totalRevenue: parseFloat((totalRevenue._sum.total || 0).toString()),
       ordersByStatus,
       topProducts: topProductsWithDetails,
+      lowStockProducts: lowStockProducts.map((product) => ({
+        id: product.id,
+        title: product.title,
+        category: product.category.name,
+        stock: product.stock,
+      })),
       dailyRevenue: chartData,
     })
   } catch (error) {

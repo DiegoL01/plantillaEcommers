@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils'
 import { InputHTMLAttributes } from 'react';
 
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   error?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -21,7 +21,7 @@ function Input({
 }: FormInputProps) {
   return (
     <label htmlFor={props.name} className="space-y-1.5">
-      <span className="block text-sm font-medium text-foreground">{label}</span>
+      {label && <span className="block text-sm font-medium text-foreground">{label}</span>}
       <span className="relative block">
         {leftIcon && (
           <span className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-muted-foreground">

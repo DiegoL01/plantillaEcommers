@@ -17,19 +17,19 @@ export default function Login() {
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
   const { showSuccess, showError } = useToast()
-  
+
   const { isAuthenticated, loading, error } = useAppSelector((state) => state.user)
-  
+
   const [mode, setMode] = useState<AuthMode>('login')
   const [showPassword, setShowPassword] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
   })
-  
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const redirect = searchParams.get('redirect') || '/'
@@ -58,30 +58,30 @@ export default function Login() {
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {}
-    
+
     if (mode === 'register' && !formData.firstName.trim()) {
       errors.firstName = 'El nombre es requerido'
     }
-    
+
     if (!formData.email.trim()) {
       errors.email = 'El email es requerido'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Email inválido'
     }
-    
+
     if (!formData.password) {
       errors.password = 'La contraseña es requerida'
     } else if (formData.password.length < 6) {
       errors.password = 'La contraseña debe tener al menos 6 caracteres'
     }
-    
+
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validate()) return
 
     if (mode === 'login') {
@@ -192,8 +192,13 @@ export default function Login() {
         {/* Demo Info */}
         <div className="mt-8 p-4 bg-muted rounded-lg text-center text-sm text-muted-foreground">
           <p className="font-medium mb-2">Demo Credentials</p>
-          <p>Email: demo@example.com</p>
-          <p>Password: 123456</p>
+          <p>ADMIN</p>
+          <p>Email: admin@luxe.com</p>
+          <p>Password: admin12345</p>
+          <p>USER</p>
+          <p>Email: test@example.com</p>
+          <p>Password: test12345</p>
+
         </div>
       </div>
     </div>

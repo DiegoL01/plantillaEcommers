@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useAppSelector } from '@/lib/hooks'
+import { formatPrice } from '@/lib/utils'
 
 interface OrderItem {
   id: number
@@ -34,6 +35,9 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders')
+
+  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0)
+  const lastOrder = orders[0]
 
   useEffect(() => {
     // Verify user is logged in
@@ -133,6 +137,21 @@ export default function UserDashboard() {
         {/* Orders Tab */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="p-6">
+                <p className="text-sm font-semibold text-gray-600">Pedidos</p>
+                <p className="text-3xl font-bold">{orders.length}</p>
+              </Card>
+              <Card className="p-6">
+                <p className="text-sm font-semibold text-gray-600">Total comprado</p>
+                <p className="text-3xl font-bold">{formatPrice(totalSpent)}</p>
+              </Card>
+              <Card className="p-6">
+                <p className="text-sm font-semibold text-gray-600">Último estado</p>
+                <p className="text-3xl font-bold capitalize">{lastOrder?.status || '-'}</p>
+              </Card>
+            </div>
+
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Mis Pedidos</h2>
               <Link href="/">
@@ -191,7 +210,7 @@ export default function UserDashboard() {
                             </p>
                           </div>
                           <p className="font-semibold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.price * item.quantity)}
                           </p>
                         </div>
                       ))}
@@ -202,7 +221,7 @@ export default function UserDashboard() {
                       <div className="text-right">
                         <p className="text-gray-600 mb-1">Total del Pedido</p>
                         <p className="text-2xl font-bold">
-                          ${order.total.toFixed(2)}
+                          {formatPrice(order.total)}
                         </p>
                       </div>
                     </div>

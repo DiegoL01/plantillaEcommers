@@ -25,6 +25,7 @@ export const Navbar = ({ isDarkMode, toggleDarkMode }: NavbarProps) => {
   
   const { itemCount } = useAppSelector((state) => state.cart)
   const { isAuthenticated, currentUser } = useAppSelector((state) => state.user)
+  const accountHref = currentUser?.role === 'ADMIN' ? '/admin' : '/account'
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,13 +112,15 @@ export const Navbar = ({ isDarkMode, toggleDarkMode }: NavbarProps) => {
             {/* User Menu */}
             {isAuthenticated ? (
               <div className="hidden md:flex items-center gap-2">
-                <Link href="/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
+                <Link href={accountHref} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
                   <img
                     src={currentUser?.avatar}
                     alt={currentUser?.firstName}
                     className="w-8 h-8 rounded-full"
                   />
-                  <span className="text-sm font-medium">{currentUser?.firstName}</span>
+                  <span className="text-sm font-medium">
+                    {currentUser?.role === 'ADMIN' ? 'Admin' : currentUser?.firstName}
+                  </span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Cerrar sesión">
                   <LogOut className="w-5 h-5" />
@@ -218,7 +221,7 @@ export const Navbar = ({ isDarkMode, toggleDarkMode }: NavbarProps) => {
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/profile"
+                  href={accountHref}
                   onClick={() => setIsMenuOpen(false)}
                   className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg transition-colors flex items-center gap-2"
                 >
@@ -227,7 +230,7 @@ export const Navbar = ({ isDarkMode, toggleDarkMode }: NavbarProps) => {
                     alt={currentUser?.firstName}
                     className="w-6 h-6 rounded-full"
                   />
-                  Mi Perfil
+                  {currentUser?.role === 'ADMIN' ? 'Panel Admin' : 'Mi Cuenta'}
                 </Link>
                 <button
                   onClick={() => {

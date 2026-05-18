@@ -11,7 +11,7 @@ import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { EmptyState } from '../../components/ui/empty-state'
 import { formatPrice } from '../../lib/utils'
-import type { CheckoutFormData } from '../../lib/types'
+import type { CheckoutFormData } from '../../types'
 
 export default function Checkout() {
   const router = useRouter()
@@ -85,17 +85,42 @@ export default function Checkout() {
 
     setIsProcessing(true)
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('auth-token')}`,
+        },
+        body: JSON.stringify({
+          items,
+          total: finalTotal,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          country: formData.country,
+        }),
+      })
 
-    // Generate order number
-    const order = `LUXE-${Date.now().toString(36).toUpperCase()}`
-    setOrderNumber(order)
-    
-    dispatch(clearCart())
-    setOrderComplete(true)
-    showSuccess('Pedido realizado con éxito')
-    setIsProcessing(false)
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'No se pudo crear el pedido')
+      }
+
+      const order = await response.json()
+      setOrderNumber(order.orderNumber)
+
+      dispatch(clearCart())
+      setOrderComplete(true)
+      showSuccess('Pedido realizado con éxito')
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Error procesando el pedido')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   if (items.length === 0 && !orderComplete) {
@@ -137,9 +162,14 @@ export default function Checkout() {
           <p className="text-sm text-muted-foreground">
             Recibirás un email de confirmación con los detalles de tu pedido.
           </p>
-          <Link href="/">
-            <Button className="w-full">Volver al Inicio</Button>
-          </Link>
+          <div className="grid gap-3">
+            <Link href="/user">
+              <Button className="w-full">Ver mis pedidos</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="secondary" className="w-full">Volver al Inicio</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )

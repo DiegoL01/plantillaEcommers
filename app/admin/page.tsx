@@ -1,24 +1,28 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import {
+  AlertTriangle,
+  DollarSign,
+  type LucideIcon,
+  ReceiptText,
+  ShoppingCart,
+  Users,
+} from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useAppSelector } from '@/lib/hooks'
+import { formatPrice } from '@/lib/utils'
 
-interface Product {
-  id: number
-  title: string
-  price: number
-  description: string
-  category: string
-  image: string
-  stock: number
-}
+type AdminTab = 'dashboard' | 'products' | 'orders' | 'users'
 
 interface SalesData {
   totalOrders: number
+  totalUsers: number
+  lowStockCount: number
   totalRevenue: number
   ordersByStatus: Array<{ status: string; _count: number }>
   topProducts: Array<{
@@ -27,248 +31,395 @@ interface SalesData {
     quantity: number
     revenue: number
   }>
-  dailyRevenue: Array<{ date: string; revenue: number }>
+  lowStockProducts: Array<{
+    id: number
+    title: string
+    category: string
+    stock: number
+  }>
+}
+
+interface AdminProduct {
+  id: number
+  title: string
+  price: number
+  category: string
+  image: string
+  stock: number
+  RatingRate: number
+  RatingCount: number
+}
+
+interface AdminOrder {
+  id: number
+  orderNumber: string
+  total: number
+  status: string
+  createdAt: string
+  customer: {
+    email: string
+    firstName: string
+    lastName?: string
+  }
+  items: Array<{
+    id: number
+    quantity: number
+    price: number
+    product: {
+      title: string
+    }
+  }>
+}
+
+interface AdminUser {
+  id: number
+  email: string
+  firstName: string
+  lastName?: string
+  role: 'ADMIN' | 'CUSTOMER'
+  createdAt: string
+  orderCount: number
+  totalSpent: number
+}
+
+const tabs: Array<{ id: AdminTab; label: string }> = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'products', label: 'Productos' },
+  { id: 'orders', label: 'Pedidos' },
+  { id: 'users', label: 'Usuarios' },
+]
+
+function getAuthHeaders() {
+  return {
+    Authorization: `Bearer ${localStorage.getItem('auth-token')}`,
+  }
+}
+
+function statusLabel(status: string) {
+  const labels: Record<string, string> = {
+    PENDING: 'Pendiente',
+    PROCESSING: 'Procesando',
+    SHIPPED: 'Enviado',
+    DELIVERED: 'Entregado',
+    CANCELLED: 'Cancelado',
+  }
+
+  return labels[status] || status
 }
 
 export default function AdminDashboard() {
   const router = useRouter()
   const user = useAppSelector((state) => state.user.currentUser)
-  const [products, setProducts] = useState<Product[]>([])
-  const [salesData, setSalesData] = useState<SalesData | null>(null)
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
+  const [sales, setSales] = useState<SalesData | null>(null)
+  const [products, setProducts] = useState<AdminProduct[]>([])
+  const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'products'>('overview')
 
   useEffect(() => {
-    // Verify admin access
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       router.push('/login')
       return
     }
 
-    fetchData()
-  }, [user, router])
+    if (user.role !== 'ADMIN') {
+      router.push('/account')
+      return
+    }
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const [productsRes, salesRes] = await Promise.all([
-        fetch('/api/products'),
-        fetch('/api/admin/sales', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
-          },
-        }),
-      ])
+    const loadAdminData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-      if (productsRes.ok) {
-        const productsData = await productsRes.json()
+        const headers = getAuthHeaders()
+        const [salesResponse, productsResponse, ordersResponse, usersResponse] =
+          await Promise.all([
+            fetch('/api/admin/sales', { headers }),
+            fetch('/api/products'),
+            fetch('/api/admin/orders', { headers }),
+            fetch('/api/admin/users', { headers }),
+          ])
+
+        if (!salesResponse.ok || !productsResponse.ok || !ordersResponse.ok || !usersResponse.ok) {
+          throw new Error('No se pudo cargar la información administrativa')
+        }
+
+        const [salesData, productsData, ordersData, usersData] = await Promise.all([
+          salesResponse.json(),
+          productsResponse.json(),
+          ordersResponse.json(),
+          usersResponse.json(),
+        ])
+
+        setSales(salesData)
         setProducts(productsData)
+        setOrders(ordersData)
+        setUsers(usersData)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error cargando el dashboard')
+      } finally {
+        setLoading(false)
       }
-
-      if (salesRes.ok) {
-        const salesDataResponse = await salesRes.json()
-        setSalesData(salesDataResponse)
-      }
-    } catch (err) {
-      setError('Error loading dashboard data')
-      console.error(err)
-    } finally {
-      setLoading(false)
     }
-  }
 
-  const handleDeleteProduct = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return
+    loadAdminData()
+  }, [router, user])
 
-    try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
-        },
-      })
-
-      if (response.ok) {
-        setProducts(products.filter((p) => p.id !== id))
-        alert('Producto eliminado exitosamente')
-      } else {
-        alert('Error al eliminar el producto')
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error)
-      alert('Error al eliminar el producto')
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg font-semibold">Cargando...</div>
-      </div>
-    )
-  }
+  const recentOrders = useMemo(() => orders.slice(0, 6), [orders])
 
   if (!user || user.role !== 'ADMIN') {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg font-semibold text-red-600">
-          Acceso denegado. Solo administradores.
-        </div>
+      <div className="container mx-auto px-4 py-12">
+        <p className="text-muted-foreground">Redirigiendo...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Panel de Administrador</h1>
-          <p className="text-gray-600">Bienvenido, {user.firstName}</p>
+    <div className="min-h-screen bg-muted/20">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Administración</h1>
+            <p className="text-sm text-muted-foreground">
+              Ventas, pedidos, stock, productos y usuarios.
+            </p>
+          </div>
+          <Link href="/admin/products/new">
+            <Button>Nuevo producto</Button>
+          </Link>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-              activeTab === 'overview'
-                ? 'bg-black text-white'
-                : 'bg-white text-black border border-gray-300 hover:bg-gray-100'
-            }`}
-          >
-            Resumen
-          </button>
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-              activeTab === 'products'
-                ? 'bg-black text-white'
-                : 'bg-white text-black border border-gray-300 hover:bg-gray-100'
-            }`}
-          >
-            Productos
-          </button>
+        <div className="mb-6 flex gap-2 overflow-x-auto">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? 'default' : 'outline'}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </Button>
+          ))}
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="mb-6 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
             {error}
           </div>
         )}
 
-        {/* Overview Tab */}
-        {activeTab === 'overview' && salesData && (
-          <div className="space-y-8">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h3 className="text-gray-600 text-sm font-semibold mb-2">
-                  Total de Pedidos
-                </h3>
-                <p className="text-3xl font-bold">{salesData.totalOrders}</p>
-              </Card>
-              <Card className="p-6">
-                <h3 className="text-gray-600 text-sm font-semibold mb-2">
-                  Ingresos Totales
-                </h3>
-                <p className="text-3xl font-bold">
-                  ${salesData.totalRevenue.toFixed(2)}
-                </p>
-              </Card>
-            </div>
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-4">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="h-28 animate-pulse rounded-md bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {activeTab === 'dashboard' && sales && (
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-4">
+                  <MetricCard icon={DollarSign} label="Ventas" value={formatPrice(sales.totalRevenue)} />
+                  <MetricCard icon={ReceiptText} label="Pedidos" value={sales.totalOrders.toString()} />
+                  <MetricCard icon={Users} label="Usuarios" value={sales.totalUsers.toString()} />
+                  <MetricCard icon={AlertTriangle} label="Stock bajo" value={sales.lowStockCount.toString()} />
+                </div>
 
-            {/* Orders by Status */}
-            <Card className="p-6">
-              <h2 className="text-xl font-bold mb-4">Pedidos por Estado</h2>
-              <div className="space-y-2">
-                {salesData.ordersByStatus.map((status) => (
-                  <div key={status.status} className="flex justify-between items-center">
-                    <span className="text-gray-600">{status.status}</span>
-                    <span className="font-semibold">{status._count}</span>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <Card className="p-6">
+                    <h2 className="mb-4 text-lg font-semibold">Pedidos recientes</h2>
+                    <div className="space-y-3">
+                      {recentOrders.map((order) => (
+                        <div key={order.id} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
+                          <div>
+                            <p className="font-medium">{order.orderNumber}</p>
+                            <p className="text-sm text-muted-foreground">{order.customer.email}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="outline">{statusLabel(order.status)}</Badge>
+                            <p className="mt-1 text-sm font-semibold">{formatPrice(order.total)}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {recentOrders.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No hay pedidos todavía.</p>
+                      )}
+                    </div>
+                  </Card>
+
+                  <Card className="p-6">
+                    <h2 className="mb-4 text-lg font-semibold">Stock bajo</h2>
+                    <div className="space-y-3">
+                      {sales.lowStockProducts.map((product) => (
+                        <div key={product.id} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
+                          <div>
+                            <p className="font-medium">{product.title}</p>
+                            <p className="text-sm text-muted-foreground">{product.category}</p>
+                          </div>
+                          <Badge variant={product.stock === 0 ? 'destructive' : 'secondary'}>
+                            {product.stock} unidades
+                          </Badge>
+                        </div>
+                      ))}
+                      {sales.lowStockProducts.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No hay productos con stock bajo.</p>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+
+                <Card className="p-6">
+                  <h2 className="mb-4 text-lg font-semibold">Productos más vendidos</h2>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {sales.topProducts.map((product) => (
+                      <div key={product.productId} className="flex items-center justify-between rounded-md border p-3">
+                        <div>
+                          <p className="font-medium">{product.productTitle}</p>
+                          <p className="text-sm text-muted-foreground">{product.quantity} unidades vendidas</p>
+                        </div>
+                        <p className="font-semibold">{formatPrice(product.revenue)}</p>
+                      </div>
+                    ))}
                   </div>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === 'products' && (
+              <Card className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="border-b bg-muted/50 text-left">
+                      <tr>
+                        <th className="p-4">Producto</th>
+                        <th className="p-4">Categoría</th>
+                        <th className="p-4">Precio</th>
+                        <th className="p-4">Stock</th>
+                        <th className="p-4 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((product) => (
+                        <tr key={product.id} className="border-b last:border-0">
+                          <td className="p-4 font-medium">{product.title}</td>
+                          <td className="p-4">{product.category}</td>
+                          <td className="p-4">{formatPrice(product.price)}</td>
+                          <td className="p-4">
+                            <Badge variant={product.stock <= 10 ? 'destructive' : 'secondary'}>
+                              {product.stock}
+                            </Badge>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Link href={`/admin/products/${product.id}`}>
+                              <Button variant="outline" size="sm">Editar</Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+
+            {activeTab === 'orders' && (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <Card key={order.id} className="p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                          <p className="font-semibold">{order.orderNumber}</p>
+                          <Badge variant="outline">{statusLabel(order.status)}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {order.customer.firstName} {order.customer.lastName || ''} · {order.customer.email}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(order.createdAt).toLocaleString('es-ES')}
+                        </p>
+                      </div>
+                      <p className="text-xl font-bold">{formatPrice(order.total)}</p>
+                    </div>
+                    <div className="mt-4 grid gap-2 md:grid-cols-2">
+                      {order.items.map((item) => (
+                        <div key={item.id} className="rounded-md border p-3 text-sm">
+                          <p className="font-medium">{item.product.title}</p>
+                          <p className="text-muted-foreground">
+                            {item.quantity} x {formatPrice(item.price)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
                 ))}
               </div>
-            </Card>
+            )}
 
-            {/* Top Products */}
-            <Card className="p-6">
-              <h2 className="text-xl font-bold mb-4">Top 10 Productos Más Vendidos</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Producto</th>
-                      <th className="px-4 py-2 text-left">Cantidades Vendidas</th>
-                      <th className="px-4 py-2 text-left">Ingresos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {salesData.topProducts.map((product) => (
-                      <tr key={product.productId} className="border-t">
-                        <td className="px-4 py-3">{product.productTitle}</td>
-                        <td className="px-4 py-3">{product.quantity}</td>
-                        <td className="px-4 py-3">${product.revenue.toFixed(2)}</td>
+            {activeTab === 'users' && (
+              <Card className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="border-b bg-muted/50 text-left">
+                      <tr>
+                        <th className="p-4">Usuario</th>
+                        <th className="p-4">Rol</th>
+                        <th className="p-4">Pedidos</th>
+                        <th className="p-4">Gastado</th>
+                        <th className="p-4">Alta</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Products Tab */}
-        {activeTab === 'products' && (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Gestionar Productos</h2>
-              <Link href="/admin/products/new">
-                <Button>+ Nuevo Producto</Button>
-              </Link>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Título</th>
-                    <th className="px-4 py-2 text-left">Categoría</th>
-                    <th className="px-4 py-2 text-left">Precio</th>
-                    <th className="px-4 py-2 text-left">Stock</th>
-                    <th className="px-4 py-2 text-left">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => (
-                    <tr key={product.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-3 font-semibold">{product.title}</td>
-                      <td className="px-4 py-3">{product.category}</td>
-                      <td className="px-4 py-3">${product.price.toFixed(2)}</td>
-                      <td className="px-4 py-3">{product.stock}</td>
-                      <td className="px-4 py-3 flex gap-2">
-                        <Link href={`/admin/products/${product.id}/edit`}>
-                          <Button variant="secondary" size="sm">
-                            Editar
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteProduct(product.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </thead>
+                    <tbody>
+                      {users.map((customer) => (
+                        <tr key={customer.id} className="border-b last:border-0">
+                          <td className="p-4">
+                            <p className="font-medium">{customer.firstName} {customer.lastName || ''}</p>
+                            <p className="text-muted-foreground">{customer.email}</p>
+                          </td>
+                          <td className="p-4">
+                            <Badge variant={customer.role === 'ADMIN' ? 'default' : 'secondary'}>{customer.role}</Badge>
+                          </td>
+                          <td className="p-4">{customer.orderCount}</td>
+                          <td className="p-4">{formatPrice(customer.totalSpent)}</td>
+                          <td className="p-4">{new Date(customer.createdAt).toLocaleDateString('es-ES')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </div>
+  )
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string
+}) {
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="mt-1 text-2xl font-bold">{value}</p>
+        </div>
+        <div className="rounded-md bg-muted p-2">
+          <Icon className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </div>
+    </Card>
   )
 }
