@@ -9,6 +9,7 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json()
 
+    // Validar campos requeridos
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -16,26 +17,38 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Email inválido' },
+        { status: 400 }
+      )
+    }
+
+    // Buscar usuario
     const user = await prisma.user.findUnique({
       where: { email },
     })
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Email no encontrado. Intenta registrarte si no tienes cuenta.' },
         { status: 401 }
       )
     }
 
+    // Validar contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Contraseña incorrecta. Intenta de nuevo o usa recuperación de contraseña.' },
         { status: 401 }
       )
     }
 
+    // Generar token
     const token = jwt.sign(
       {
         id: user.id,
@@ -60,7 +73,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error logging in:', error)
     return NextResponse.json(
-      { error: 'Failed to login' },
+      { error: 'Error al iniciar sesión. Intenta nuevamente.' },
       { status: 500 }
     )
   }
