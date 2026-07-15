@@ -33,7 +33,7 @@ export function ErrorAlert({ message, type = 'error', onClose, details }: ErrorA
   return (
     <div className={`rounded-lg border-l-4 ${bgColor[type]} p-4 mb-4`}>
       <div className="flex items-start gap-3">
-        <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColor[type]}`} />
+        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${iconColor[type]}`} />
         <div className="flex-1 min-w-0">
           <p className={`font-medium ${textColor[type]}`}>{message}</p>
           {details && details.length > 0 && (
@@ -50,7 +50,7 @@ export function ErrorAlert({ message, type = 'error', onClose, details }: ErrorA
         {onClose && (
           <button
             onClick={onClose}
-            className={`flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity ${textColor[type]}`}
+            className={`shrink-0 opacity-60 hover:opacity-100 transition-opacity ${textColor[type]}`}
           >
             <X className="w-4 h-4" />
           </button>

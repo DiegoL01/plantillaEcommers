@@ -14,7 +14,7 @@ async function main() {
 
   // Crear usuario admin
   console.log('👨‍💼 Creating admin user...')
-  const hashedPassword = await bcrypt.hash('admin12345', 10)
+  const hashedPassword = await bcrypt.hash('Admin12345', 10)
   await prisma.user.create({
     data: {
       email: 'admin@luxe.com',
@@ -25,7 +25,7 @@ async function main() {
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin@luxe.com',
     },
   })
-  console.log('✅ Admin user created: admin@luxe.com (password: admin12345)')
+  console.log('✅ Admin user created: admin@luxe.com (password: Admin12345)')
 
   // Crear categorías
   console.log('📁 Creating categories...')
@@ -193,7 +193,7 @@ async function main() {
 
   // Crear usuario de prueba
   console.log('👤 Creating test user...')
-  const testPassword = await bcrypt.hash('test12345', 10)
+  const testPassword = await bcrypt.hash('Test12345', 10)
   await prisma.user.create({
     data: {
       email: 'test@example.com',
@@ -204,7 +204,7 @@ async function main() {
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test@example.com',
     },
   })
-  console.log('✅ Test user created: test@example.com (password: test12345)')
+  console.log('✅ Test user created: test@example.com (password: Test12345)')
 
   console.log('✅ Database seeded successfully!')
   console.log('📊 Created:')
@@ -213,8 +213,8 @@ async function main() {
   console.log(`   - 1 admin user`)
   console.log(`   - 1 test customer`)
   console.log('\n🔐 Credentials:')
-  console.log('   Admin: admin@luxe.com / admin12345')
-  console.log('   Customer: test@example.com / test12345')
+  console.log('   Admin: admin@luxe.com / Admin12345')
+  console.log('   Customer: test@example.com / Test12345')
 }
 
 main()

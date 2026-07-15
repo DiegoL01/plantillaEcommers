@@ -31,7 +31,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     e.stopPropagation()
     setIsLiked(!isLiked)
   }
-
+const displayName = capitalizeFirst(product?.category ?? '');
   return (
     <Link
       href={`/product/${product.id}`}
@@ -56,7 +56,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           variant="secondary"
           className="absolute top-3 left-3"
         >
-          {capitalizeFirst(product.category)}
+          {displayName}
         </Badge>
 
         {/* Like Button */}

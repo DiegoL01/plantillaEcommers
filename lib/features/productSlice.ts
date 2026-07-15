@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import type { Product, ProductFilters } from '../../types'
 
+
 interface ProductState {
   items: Product[]
   filteredItems: Product[]
@@ -32,7 +33,14 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products`)
+      const response = await fetch(`${API_BASE_URL}/products `,
+        {
+          headers: {
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`,
+          }
+        })
+
       if (!response.ok) throw new Error('Failed to fetch products')
       const products = await response.json()
       return products as Product[]

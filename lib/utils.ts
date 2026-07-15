@@ -17,9 +17,8 @@ export function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength) + '...'
 }
 
-export function capitalizeFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
+export const capitalizeFirst = (str?: string) => 
+  str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
 export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
