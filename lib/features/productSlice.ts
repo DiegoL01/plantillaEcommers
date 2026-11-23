@@ -33,7 +33,7 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products `,
+      const response = await fetch(`${API_BASE_URL}/products`,
         {
           headers: {
             'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
